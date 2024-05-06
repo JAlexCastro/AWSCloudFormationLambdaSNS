@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Stack para crear un tópico SNS y su política de acceso.s
+
+Resources:
+  MySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: TemaLambdaTest
+      DisplayName: Alerta desde SNS
+
+  MySNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - Ref: MySNSTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref MySNSTopic
+
+Outputs:
+  SNSTopicARN:
+    Description: ARN del tópico SNS
+    Value: !Ref MySNSTopic
+  SNSLambdaPolicy:
+    Description: Politica de SNS para Lambda
+    Value: !Ref MySNSTopicPolicy

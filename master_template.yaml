@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Plantilla principal para desplegar stack anidado de Lambda y SNS
+
+Resources:
+  LambdaStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'https://mi-bucket-stack654.s3.us-west-2.amazonaws.com/proyectoLambdaSNS/lambda-stack.yaml'
+      Parameters:
+        ARNTopicSNS: !GetAtt SNSStack.Outputs.SNSTopicARN
+        LambdaRegion: us-west-2
+
+  SNSStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'https://mi-bucket-stack654.s3.us-west-2.amazonaws.com/proyectoLambdaSNS/sns-stack.yaml'
+      
+Outputs:
+  TopicArn:
+    Description: "ARN del Tema SNS"
+    Value: !GetAtt SNSStack.Outputs.SNSTopicARN
+
+  LambdaFunctionArn:
+    Description: "ARN de la Función Lambda"
+    Value: !GetAtt LambdaStack.Outputs.MyLambdaFunctionARN

@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Stack para crear una función Lambda que puede publicar en un tópico SNS específico.
+
+Parameters:
+  ARNTopicSNS:
+    Type: String
+    Description: ARN del tema que accionará la función lambda
+  LambdaRegion:
+    Type: String
+    Description: Región en la que se desplegará la función Lambda
+
+Resources:
+  MyLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: LambdaSNSPublishPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: sns:Publish
+                Resource: !Ref ARNTopicSNS
+                
+  MyLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Environment:
+          Variables:
+            ARNTopicSNS: !Ref ARNTopicSNS
+            LambdaRegion: !Ref AWS::Region
+      Code:
+        ZipFile: |
+          import os
+          import boto3
+          import json
+
+          # Crear el cliente SNS con la región capturada desde la variable de entorno
+          sns_client = boto3.client('sns', region_name=os.environ['LambdaRegion'])
+
+          # Funcion para enviar mensaje de notificacion al tema
+          def publicarMensaje(arnTema, cuerpoMensaje):
+              # Publica el mensaje
+              response = sns_client.publish(
+                  TopicArn=arnTema,
+                  Message=cuerpoMensaje
+              )
+
+              # ID para verificar que el mensaje fue enviado correctamente
+              print("Mensaje enviado con exito. ID del mensaje:", response['MessageId'])
+
+          def lambda_handler(event, context):
+              print("Evento de ejecución.")
+
+              # ARN del tema de SNS y el cuerpo del mensaje
+              arnTema = os.environ['ARNTopicSNS']
+              cuerpo = "Este es el cuerpo del mensaje que será enviado a los subscriptores."
+              
+              # Llamar a la función para enviar el mensaje
+              publicarMensaje(arnTema, cuerpo)
+              
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps('Mensaje enviado exitosamente')
+              }
+      Handler: index.lambda_handler
+      Role: !GetAtt MyLambdaExecutionRole.Arn
+      Runtime: python3.8
+      Timeout: 120
+
+Outputs:
+  MyLambdaFunctionARN:
+    Description: ARN de la función Lambda
+    Value: !GetAtt MyLambdaFunction.Arn
