@@ -1,1 +1,3 @@
 # AWSCloudFormationLambdaSNS
+
+Proyecto de demostración de habilidades en la nube utilizando servicios de Amazon Web Services (AWS). Implementación de una arquitectura anidada que utiliza AWS CloudFormation para desplegar una función Lambda y un tópico SNS. La función Lambda publica mensajes en el tópico SNS en respuesta a eventos específicos. La infraestructura se define como código y las plantillas de CloudFormation están almacenadas en un bucket de Amazon S3 para un acceso eficiente. Este proyecto muestra competencias en el diseño, desarrollo y despliegue de soluciones en la nube utilizando prácticas de arquitectura escalable y automatización de infraestructura.
